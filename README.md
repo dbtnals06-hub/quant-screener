@@ -52,7 +52,10 @@ python -m streamlit run app.py
 2. **같은 와이파이(LAN)** — `streamlit run` 시 출력되는 Network URL
    (예: `http://172.30.1.53:8501`)을 같은 네트워크 사용자에게 공유(방화벽 8501 인바운드 허용 필요).
 3. **영구 웹사이트 (Streamlit Community Cloud)** — GitHub 푸시 후 share.streamlit.io에서 배포하면
-   `xxx.streamlit.app` 주소가 24시간 유지(내 PC 불필요). 단, 미국 서버라 한국 데이터는 불안정할 수 있음.
+   `xxx.streamlit.app` 주소가 24시간 유지(내 PC 불필요).
+   - 미국 서버라 **KRX·네이버가 차단**되므로, 한국 시장은 자동으로 **yfinance(.KS/.KQ)** 폴백 경로로 받는다
+     (`korea.py` 이중 경로 + `kr_universe.py` 정적 목록). 모멘텀·저변동성·ROE는 정상, PER/PBR은 약해질 수 있음.
+   - 클라우드(비-Windows)에서는 기본 시장이 자동으로 **미국**으로 잡힌다(한국도 사이드바에서 선택 가능).
 
 ---
 
