@@ -46,6 +46,11 @@ def main() -> int:
     at.selectbox[0].set_value("미국 (NYSE/NASDAQ)").run()
     _check(at, "미국")
 
+    # 2b) 통합(한국+미국)
+    at.selectbox[0].set_value("통합 (한국+미국)").run()
+    _check(at, "통합")
+    assert "시장" in at.dataframe[0].value.columns, "통합 모드에 시장 컬럼이 없음"
+
     # 3) 커스텀 전략 + 가치함정 제외 토글 등 부가 경로
     at.selectbox[1].set_value("커스텀 (직접 조립)").run()
     assert len(at.exception) == 0, f"커스텀 전략 예외: {[str(e.value) for e in at.exception]}"

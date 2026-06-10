@@ -5,6 +5,7 @@ import config
 from .base import DataSource
 from .korea import KoreaSource
 from .us import USSource
+from .combined import CombinedSource
 
 
 def get_source(market: str) -> DataSource:
@@ -12,7 +13,9 @@ def get_source(market: str) -> DataSource:
         return KoreaSource()
     if market == config.MARKET_US:
         return USSource()
+    if market == config.MARKET_BOTH:
+        return CombinedSource()
     raise ValueError(f"알 수 없는 시장 코드: {market}")
 
 
-__all__ = ["DataSource", "KoreaSource", "USSource", "get_source"]
+__all__ = ["DataSource", "KoreaSource", "USSource", "CombinedSource", "get_source"]

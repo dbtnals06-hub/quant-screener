@@ -35,13 +35,16 @@ WINSOR_UPPER = 0.98              # 상한 분위
 # ── 시장 코드 ───────────────────────────────────────────────
 MARKET_KR = "KR"
 MARKET_US = "US"
+MARKET_BOTH = "BOTH"
 
 LABEL_KR = "한국 (KOSPI/KOSDAQ)"
 LABEL_US = "미국 (NYSE/NASDAQ)"
+LABEL_BOTH = "통합 (한국+미국)"
 
 MARKET_LABELS = {
     LABEL_KR: MARKET_KR,
     LABEL_US: MARKET_US,
+    LABEL_BOTH: MARKET_BOTH,
 }
 
 

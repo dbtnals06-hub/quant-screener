@@ -66,11 +66,13 @@ class KoreaSource(DataSource):
         self._info_cache: dict[str, dict] = {}         # yfinance info 캐시
         self._session = requests.Session()
         self._session.headers.update(_HEADERS)
-        # 정적 유니버스: code -> (name, market, cap, yahoo_ticker)
+        # 정적 유니버스: code -> (name, market, cap, yahoo_ticker, sector)
         self._static: dict[str, tuple] = {}
-        for code, name, mkt, cap in KR_UNIVERSE:
+        self._sector_of: dict[str, str] = {}
+        for code, name, mkt, cap, sector in KR_UNIVERSE:
             suffix = ".KS" if mkt == "KOSPI" else ".KQ"
-            self._static[code] = (name, mkt, cap, code + suffix)
+            self._static[code] = (name, mkt, cap, code + suffix, sector)
+            self._sector_of[code] = sector or mkt
 
     def _yahoo(self, code: str) -> str:
         rec = self._static.get(code)
@@ -110,7 +112,10 @@ class KoreaSource(DataSource):
         lst = self._get_listing()
         df = lst[lst["market"].isin(["KOSPI", "KOSDAQ"])] if lst["market"].notna().any() else lst
         df = df[df["market_cap"] > 0].sort_values("market_cap", ascending=False).head(limit)
-        return pd.DataFrame({"name": df["name"], "sector": df["market"],
+        # 섹터: 정적 GICS 매핑 우선, 없으면 시장(KOSPI/KOSDAQ)
+        sectors = [self._sector_of.get(code, mkt)
+                   for code, mkt in zip(df.index, df["market"])]
+        return pd.DataFrame({"name": df["name"], "sector": sectors,
                              "market_cap": df["market_cap"]}, index=df.index)
 
     def _quotes_fdr(self, tickers: list[str]) -> pd.DataFrame:
@@ -205,12 +210,12 @@ class KoreaSource(DataSource):
         return None
 
     def _universe_yf(self, limit: int) -> pd.DataFrame:
-        items = KR_UNIVERSE[:limit]  # 이미 시총 내림차순
+        items = KR_UNIVERSE[:limit]  # (code, name, market, cap, sector) — 시총 내림차순
         return pd.DataFrame(
-            {"name": [n for _, n, _, _ in items],
-             "sector": [m for _, _, m, _ in items],     # KOSPI/KOSDAQ를 섹터 대용으로
-             "market_cap": [float(cap) for *_, cap in items]},
-            index=[c for c, _, _, _ in items],
+            {"name": [n for _, n, _, _, _ in items],
+             "sector": [(s or m) for _, _, m, _, s in items],   # GICS 섹터(없으면 시장)
+             "market_cap": [float(cap) for _, _, _, cap, _ in items]},
+            index=[c for c, _, _, _, _ in items],
         )
 
     def _prices_yf(self, tickers: list[str], days: int, progress: ProgressCB) -> pd.DataFrame:

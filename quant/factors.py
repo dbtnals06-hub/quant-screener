@@ -93,7 +93,7 @@ def trailing_drawdown(prices: pd.DataFrame, window: int = config.VOL_WINDOW) -> 
 
 # ── 팩터 패널 조립 ─────────────────────────────────────────
 RAW_COLUMNS = [
-    "name", "sector", "market_cap",
+    "name", "sector", "market_cap", "mkt",
     "per", "pbr", "dividend_yield", "roe", "debt_to_equity", "profit_margin",
     "mom_12_1", "vol_6m", "drawdown_6m",
 ]
@@ -117,6 +117,7 @@ def build_factor_panel(prices: pd.DataFrame,
     panel["name"] = universe.get("name")
     panel["sector"] = universe.get("sector")
     panel["market_cap"] = universe.get("market_cap")
+    panel["mkt"] = universe.get("mkt")   # 통합 시장에서 행별 KR/US 태그(단일 시장은 None)
 
     for col in ["per", "pbr", "dividend_yield", "roe", "debt_to_equity", "profit_margin"]:
         panel[col] = fundamentals[col].reindex(idx) if col in fundamentals else np.nan

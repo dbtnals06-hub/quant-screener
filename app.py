@@ -62,6 +62,15 @@ def fmt_mktcap(val: float, market: str) -> str:
     return f"${val/1e6:.0f}M"
 
 
+def fmt_price(val: float, mkt: str) -> str:
+    """행별 시장에 맞춰 통화 기호와 소수 자리를 붙인다."""
+    if pd.isna(val):
+        return "-"
+    if mkt == config.MARKET_KR:
+        return f"₩{val:,.0f}"
+    return f"${val:,.2f}"
+
+
 def _blend(a, b, t):
     return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
@@ -208,12 +217,20 @@ def build_view(disp_panel: pd.DataFrame) -> pd.DataFrame:
     except Exception:
         quotes = pd.DataFrame(index=tickers, columns=["price", "change_pct"], dtype=float)
     v = disp_panel.join(quotes)
+    # 행별 시장 코드: 통합은 KR/US, 단일 시장은 전역 market
+    if "mkt" in v.columns and v["mkt"].notna().any():
+        row_mkt = v["mkt"].fillna(market)
+    else:
+        row_mkt = pd.Series(market, index=v.index)
+
     tbl = pd.DataFrame(index=v.index)
     tbl["순위"] = v["rank"].astype(int)
     tbl["티커"] = v.index
     tbl["종목"] = v["name"]
+    if market == config.MARKET_BOTH:
+        tbl["시장"] = row_mkt.map({"KR": "🇰🇷 KR", "US": "🇺🇸 US"}).fillna(row_mkt)
     tbl["섹터"] = v["sector"]
-    tbl["현재가"] = v["price"]
+    tbl["현재가"] = [fmt_price(p, m) for p, m in zip(v["price"], row_mkt)]
     tbl["등락률%"] = v["change_pct"]
     tbl["종합점수"] = v["composite"]
     tbl["백분위"] = v["percentile"]
@@ -227,15 +244,14 @@ def build_view(disp_panel: pd.DataFrame) -> pd.DataFrame:
     tbl["ROE%"] = v["roe"]
     tbl["12-1수익%"] = v["mom_12_1"] * 100.0
     tbl["변동성%"] = v["vol_6m"] * 100.0
-    tbl["시총"] = v["market_cap"].map(lambda x: fmt_mktcap(x, market))
+    tbl["시총"] = [fmt_mktcap(c, m) for c, m in zip(v["market_cap"], row_mkt)]
     tbl["행동신호"] = v["flags"]
     return tbl
 
 
 def style_table(tbl: pd.DataFrame):
-    price_fmt = f"{{:,.{price_decimals}f}}"
+    # 현재가·시총은 build_view에서 이미 통화 기호 붙은 문자열로 만들어짐
     fmt = {
-        "현재가": lambda x: "-" if pd.isna(x) else price_fmt.format(x),
         "등락률%": lambda x: "-" if pd.isna(x) else f"{x:+.2f}%",
         "종합점수": "{:.2f}", "백분위": "{:.0f}",
         "가치": "{:+.2f}", "모멘텀": "{:+.2f}", "퀄리티": "{:+.2f}", "저변동성": "{:+.2f}",
@@ -315,7 +331,7 @@ def live_block():
     up = int((tbl["등락률%"] > 0).sum())
     down = int((tbl["등락률%"] < 0).sum())
     st.caption(f"{badge} · 최근 시세 {stamp} · 폴링 {poll}s · "
-               f"상승 {up} / 하락 {down}  ·  통화 {currency}")
+               f"상승 {up} / 하락 {down}  ·  통화 {currency or '₩+$'}")
     st.dataframe(
         style_table(tbl),
         width="stretch", hide_index=True,
