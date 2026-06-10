@@ -7,12 +7,14 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, Optional
 
 import pandas as pd
 
 # 진행률 콜백: fraction(0~1), label 을 받는다(없으면 None).
-ProgressCB = Callable[[float, str], None] | None
+# 주의: 이 줄은 모듈 로드 시 '실제로' 평가되므로 PEP604(`X | None`) 대신
+#       모든 파이썬 버전에서 안전한 Optional[...] 을 쓴다.
+ProgressCB = Optional[Callable[[float, str], None]]
 
 
 class DataSource(ABC):
