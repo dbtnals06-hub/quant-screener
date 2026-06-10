@@ -100,7 +100,11 @@ def change_css(series: pd.Series) -> list[str]:
 st.sidebar.title("📈 퀀트 라이브 스크리너")
 st.sidebar.caption("KOSPI·KOSDAQ · NYSE·NASDAQ | 멀티팩터 + 행동재무")
 
-market_label = st.sidebar.selectbox("🌐 시장", list(config.MARKET_LABELS.keys()))
+_market_labels = list(config.MARKET_LABELS.keys())
+market_label = st.sidebar.selectbox(
+    "🌐 시장", _market_labels,
+    index=_market_labels.index(config.DEFAULT_MARKET_LABEL),
+)
 market = config.MARKET_LABELS[market_label]
 
 universe_size = st.sidebar.slider("유니버스 크기 (시총 상위 N)", 30, 200,
@@ -150,7 +154,18 @@ with st.spinner(f"📥 {market_label} 기초데이터 적재 중… (최초 1회
     try:
         base = load_base(market, universe_size)
     except Exception as e:
-        st.error(f"데이터 적재 실패: {e}")
+        if market == config.MARKET_KR:
+            st.error(
+                "🇰🇷 한국(KRX) 데이터를 불러오지 못했습니다.\n\n"
+                "이 화면이 **해외(클라우드) 서버**에서 돌고 있다면, KRX·네이버가 해외 IP를 "
+                "차단하기 때문입니다(코드 문제가 아닙니다).\n\n"
+                "👉 왼쪽 사이드바에서 **시장을 ‘미국 (NYSE/NASDAQ)’** 로 바꾸면 바로 동작합니다.\n"
+                "한국 데이터는 **국내 PC에서 실행**할 때(run.bat / share.bat)만 안정적으로 받아집니다."
+            )
+        else:
+            st.error(f"데이터 적재 실패: {e}")
+        with st.expander("기술 상세 보기"):
+            st.code(str(e))
         st.stop()
 
 panel = base["panel"]
