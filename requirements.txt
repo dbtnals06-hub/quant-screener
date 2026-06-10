@@ -1,0 +1,11 @@
+# 퀀트 라이브 스크리너 의존성
+streamlit>=1.39
+pandas>=2.0
+numpy>=1.24
+altair>=5.0
+
+# 데이터 소스
+finance-datareader>=0.9.50   # 한국 시세/상장목록/일봉 (import FinanceDataReader)
+yfinance>=0.2.40             # 미국 시세/펀더멘털
+requests>=2.31               # 한국 펀더멘털(네이버 모바일 API)
+lxml>=5.0                    # pandas.read_html (S&P500 유니버스)

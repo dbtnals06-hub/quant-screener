@@ -1,0 +1,17 @@
+[theme]
+base = "dark"
+primaryColor = "#22c55e"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#161b22"
+font = "sans serif"
+
+[server]
+# false = 로컬 실행 시 기본 브라우저를 자동으로 연다 (true는 서버 배포용)
+headless = false
+runOnSave = true
+# 터널(cloudflare/ngrok 등)로 외부 공유 시 WebSocket이 막히지 않도록 완화
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false

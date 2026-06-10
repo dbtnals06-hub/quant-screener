@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# 가상환경
+.venv/
+venv/
+env/
+
+# Streamlit 비밀값(혹시 추가하더라도 절대 커밋 금지)
+.streamlit/secrets.toml
+
+# 로그/임시
+*.log
+tests/diag_*.py
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 배포 도구 바이너리(리포에 포함하지 않음)
+cloudflared.exe
